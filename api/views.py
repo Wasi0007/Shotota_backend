@@ -219,6 +219,7 @@ def preprocessing(sentences):
             elif j == 5:
                 sentences = f6(sentences)  # Applies function f6
                 # print(sentences)
+
     return generate_embeddings(sentences)
     
 
@@ -304,8 +305,13 @@ def check_plagiarism(request):
                 if max_similarity >= 0.80:
                     tot_plag += 1
 
-            score = (tot_plag/len(corpus_text))*100.0
-            print(score)
+            score = 0.0
+
+            if len(corpus_text) == 0:
+                score = 0.00
+            else:
+                score = (tot_plag/len(corpus_text))*100.0
+
 
             temp = []
             for idx, sentence in enumerate(corpus_text):
