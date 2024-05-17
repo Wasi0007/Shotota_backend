@@ -71,56 +71,72 @@ null_key = "-2398h23end7h1en198e01-sdfn9304r4t0SADSAD@DE(*@&@*@)"
 
 def f1(corpus_sentences):
     temp = []
+
     punctuation_pattern = r'[,:;\'"।!?.]'
     for sentence in corpus_sentences:
-        clean_sentence = re.sub(punctuation_pattern, '', sentence)
-        if len(clean_sentence.strip()) > 0:
-            temp.append(clean_sentence)
-        else:
-            temp.append(null_key)
+        try:
+            clean_sentence = re.sub(punctuation_pattern, '', sentence)
+            if len(clean_sentence.strip()) > 0:
+                temp.append(clean_sentence)
+            else:
+                temp.append(null_key)
+        except Exception as e:
+            temp.append(sentence)
+
     return temp
 
 # **Remove non Bangla word**
 
 def f2(corpus_sentences):
     bangla_sentences = []
-    for i in range(len(corpus_sentences)):
-        if corpus_sentences == null_key:
-            bangla_sentences.append(null_key)
-            continue
-        if len(corpus_sentences[i]) > 0:
-            new_x = ""
-            for j in range(len(corpus_sentences[i])):
-                unicode_val = ord(corpus_sentences[i][j])
-                if (0x0980 <= unicode_val <= 0x09FF):
-                    new_x += corpus_sentences[i][j]
-                elif corpus_sentences[i][j] == ' ':
-                    if len(new_x) > 0 and new_x[len(new_x)-1] != ' ':
-                        new_x += corpus_sentences[i][j]
 
-            if len(new_x) > 0:
-                new_x = new_x.lstrip(" ")
-                new_x = new_x.rstrip(" ")
-                bangla_sentences.append(new_x)
-            else:
+    for i in range(len(corpus_sentences)):
+        try:
+            if corpus_sentences == null_key:
                 bangla_sentences.append(null_key)
+                continue
+            if len(corpus_sentences[i]) > 0:
+                new_x = ""
+                for j in range(len(corpus_sentences[i])):
+                    unicode_val = ord(corpus_sentences[i][j])
+                    if (0x0980 <= unicode_val <= 0x09FF):
+                        new_x += corpus_sentences[i][j]
+                    elif corpus_sentences[i][j] == ' ':
+                        if len(new_x) > 0 and new_x[len(new_x)-1] != ' ':
+                            new_x += corpus_sentences[i][j]
+
+                if len(new_x) > 0:
+                    new_x = new_x.lstrip(" ")
+                    new_x = new_x.rstrip(" ")
+                    bangla_sentences.append(new_x)
+                else:
+                    bangla_sentences.append(null_key)
+        except Exception as e:
+            bangla_sentences.append(corpus_sentences[i])
+
+
     return bangla_sentences
 
 # **Stopword Removal**
 
 def f3(corpus_sentences):
     temp = []
+
     for sentence in corpus_sentences:
-        if sentence == null_key:
-            temp.append(null_key)
-            continue
-        words = sentence.split()
-        filtered_words = [word for word in words if word not in bengali_stop_words]
-        filtered_sentence = ' '.join(filtered_words)
-        if len(filtered_sentence.strip()) > 0:
-            temp.append(filtered_sentence)
-        else:
-            temp.append(null_key)
+        try:
+            if sentence == null_key:
+                temp.append(null_key)
+                continue
+            words = sentence.split()
+            filtered_words = [word for word in words if word not in bengali_stop_words]
+            filtered_sentence = ' '.join(filtered_words)
+            if len(filtered_sentence.strip()) > 0:
+                temp.append(filtered_sentence)
+            else:
+                temp.append(null_key)
+        except Exception as e:
+            temp.append(sentence)
+
 
     return temp
 
@@ -128,13 +144,15 @@ def f3(corpus_sentences):
 
 
 def f4(corpus_sentences):
-  bl = lm.Lemmatizer()
-  temp = []
-  for sentence in corpus_sentences:
-      sentence = bl.lemma(sentence)
-      temp.append(sentence)
-
-  return temp
+    bl = lm.Lemmatizer()
+    temp = []
+    for sentence in corpus_sentences:
+        try:
+            sentence = bl.lemma(sentence)
+        except Exception as e:
+            sentence = sentence
+        temp.append(sentence)
+    return temp
 
 # **Acronym Expansion (UN -> United Nation)**
 
@@ -203,22 +221,17 @@ def preprocessing(sentences):
         if i & (1 << j):  # Checks if the j-th bit is set in i
             if j == 0:
                 sentences = f1(sentences)  # Applies function f1
-                # print(sentences)
             elif j == 1:
                 sentences = f2(sentences)  # Applies function f2
-                # print(sentences)
             elif j == 2:
                 sentences = f3(sentences)  # Applies function f3
-                # print(sentences)
             elif j == 3:
                 sentences = f4(sentences)  # Applies function f4
-                # print(sentences)
             elif j == 4:
                 sentences = f5(sentences)  # Applies function f5
-                # print(sentences)
             elif j == 5:
                 sentences = f6(sentences)  # Applies function f6
-                # print(sentences)
+
 
     return generate_embeddings(sentences)
     
@@ -277,10 +290,9 @@ def check_plagiarism(request):
                     temp.append(plagiarised_text[i])
             plagiarised_text = temp
 
-
             corpus_emb = preprocessing(corpus_text)
-            plag_emb = preprocessing(plagiarised_text)
 
+            plag_emb = preprocessing(plagiarised_text)
 
             
             max_scores = []
